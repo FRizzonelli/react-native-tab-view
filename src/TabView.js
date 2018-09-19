@@ -191,7 +191,7 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
           stickyHeaderIndices={[1]} 
           collapsable={false} 
           showsVerticalScrollIndicator={false} style={[styles.container, this.props.style]}
-          onScroll={(e) => {
+          onScrollEndDrag={(e) => {
             let paddingToBottom = 10;
             paddingToBottom += e.nativeEvent.layoutMeasurement.height;
             if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
