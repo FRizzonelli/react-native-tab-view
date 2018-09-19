@@ -1,18 +1,10 @@
 /* @flow */
 
-import * as React from 'react';
 import PropTypes from 'prop-types';
-import {
-  Animated,
-  NativeModules,
-  StyleSheet,
-  View,
-  ScrollView,
-  Platform,
-  I18nManager,
-} from 'react-native';
-import TouchableItem from './TouchableItem';
+import * as React from 'react';
+import { Animated, I18nManager, NativeModules, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SceneRendererPropType } from './PropTypes';
+import TouchableItem from './TouchableItem';
 import type { Scene, SceneRendererProps } from './TypeDefinitions';
 import type {
   ViewStyleProp,
@@ -37,7 +29,6 @@ type Props<T> = SceneRendererProps<T> & {
   renderBadge?: (scene: Scene<T>) => React.Node,
   renderIndicator?: (props: IndicatorProps<T>) => React.Node,
   onTabPress?: (scene: Scene<T>) => mixed,
-  onTabLongPress?: (scene: Scene<T>) => mixed,
   tabStyle?: ViewStyleProp,
   indicatorStyle?: ViewStyleProp,
   labelStyle?: TextStyleProp,
@@ -67,9 +58,9 @@ export default class TabBar<T: *> extends React.Component<Props<T>, State> {
     renderLabel: PropTypes.func,
     renderIndicator: PropTypes.func,
     onTabPress: PropTypes.func,
-    onTabLongPress: PropTypes.func,
     labelStyle: PropTypes.any,
     style: PropTypes.any,
+    contentContainerStyle: PropTypes.any,
   };
 
   static defaultProps = {
@@ -130,8 +121,7 @@ export default class TabBar<T: *> extends React.Component<Props<T>, State> {
     }
 
     if (
-      prevProps.navigationState.routes.length !==
-        this.props.navigationState.routes.length ||
+      prevProps.navigationState.routes !== this.props.navigationState.routes ||
       prevProps.layout.width !== this.props.layout.width
     ) {
       this._resetScroll(this.props.navigationState.index, false);
@@ -267,12 +257,6 @@ export default class TabBar<T: *> extends React.Component<Props<T>, State> {
     this.props.jumpTo(route.key);
   };
 
-  _handleTabLongPress = ({ route }: Scene<*>) => {
-    if (this.props.onTabLongPress) {
-      this.props.onTabLongPress({ route });
-    }
-  };
-
   _normalizeScrollValue = (props, value) => {
     const { layout, navigationState } = props;
     const tabWidth = this._getTabWidth(props);
@@ -363,7 +347,7 @@ export default class TabBar<T: *> extends React.Component<Props<T>, State> {
     const translateX = Animated.multiply(this.state.scrollAmount, -1);
 
     return (
-      <Animated.View style={[styles.tabBar, this.props.style]}>
+      <Animated.View style={[styles.tabBar, this.props.style, this.props.contentContainerStyle]}>
         <Animated.View
           pointerEvents="none"
           style={[
@@ -409,7 +393,7 @@ export default class TabBar<T: *> extends React.Component<Props<T>, State> {
             onMomentumScrollBegin={this._handleMomentumScrollBegin}
             onMomentumScrollEnd={this._handleMomentumScrollEnd}
             contentOffset={this.state.initialOffset}
-            ref={el => (this._scrollView = el && el.getNode())}
+            ref={el => (this._scrollView = el && el._component)}
           >
             {routes.map((route, i) => {
               const outputRange = inputRange.map(
@@ -485,7 +469,6 @@ export default class TabBar<T: *> extends React.Component<Props<T>, State> {
                   pressOpacity={this.props.pressOpacity}
                   delayPressIn={0}
                   onPress={() => this._handleTabPress({ route })}
-                  onLongPress={() => this._handleTabLongPress({ route })}
                   style={tabContainerStyle}
                 >
                   <View pointerEvents="none" style={styles.container}>

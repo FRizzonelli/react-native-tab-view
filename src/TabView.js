@@ -1,11 +1,11 @@
 /* @flow */
 
-import * as React from 'react';
 import PropTypes from 'prop-types';
-import { Animated, View, StyleSheet } from 'react-native';
-import TabBar from './TabBar';
+import * as React from 'react';
+import { Animated, ScrollView, StyleSheet, View } from 'react-native';
 import PagerDefault from './PagerDefault';
 import { NavigationStatePropType } from './PropTypes';
+import TabBar from './TabBar';
 import type {
   Scene,
   SceneRendererProps,
@@ -14,7 +14,8 @@ import type {
   PagerCommonProps,
   PagerExtraProps,
 } from './TypeDefinitions';
-import type { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
+import type
+ { ViewStyleProp } from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 type Props<T> = PagerCommonProps<T> &
   PagerExtraProps & {
@@ -22,6 +23,7 @@ type Props<T> = PagerCommonProps<T> &
     onIndexChange: (index: number) => mixed,
     initialLayout?: Layout,
     renderPager: (props: *) => React.Node,
+    renderTopContent: (props: *) => React.Node,
     renderScene: (props: SceneRendererProps<T> & Scene<T>) => React.Node,
     renderTabBar: (props: SceneRendererProps<T>) => React.Node,
     tabBarPosition: 'top' | 'bottom',
@@ -41,6 +43,7 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
   static propTypes = {
     navigationState: NavigationStatePropType.isRequired,
     onIndexChange: PropTypes.func.isRequired,
+    onEndReached: PropTypes.func,
     initialLayout: PropTypes.shape({
       height: PropTypes.number.isRequired,
       width: PropTypes.number.isRequired,
@@ -49,6 +52,7 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
     renderPager: PropTypes.func.isRequired,
     renderScene: PropTypes.func.isRequired,
     renderTabBar: PropTypes.func,
+    renderTopContent: PropTypes.func,
     tabBarPosition: PropTypes.oneOf(['top', 'bottom']),
   };
 
@@ -173,6 +177,8 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
       renderScene,
       /* eslint-enable no-unused-vars */
       renderPager,
+      renderTopContent,
+      onEndReached,
       renderTabBar,
       tabBarPosition,
       ...rest
@@ -180,7 +186,47 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
 
     const props = this._buildSceneRendererProps();
 
-    return (
+    return renderTopContent ? (
+        <ScrollView 
+          stickyHeaderIndices={[1]} 
+          collapsable={false} 
+          showsVerticalScrollIndicator={false} style={[styles.container, this.props.style]}
+          onScroll={(e) => {
+            let paddingToBottom = 10;
+            paddingToBottom += e.nativeEvent.layoutMeasurement.height;
+            if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
+              if (onEndReached) {
+                onEndReached();
+              }
+            }
+          }}
+          scrollEventThrottle={400}>
+            {renderTopContent(props)}
+            {tabBarPosition === 'top' && renderTabBar(props)}
+            <View onLayout={this._handleLayout} style={styles.pager}>
+              {renderPager({
+                ...props,
+                ...rest,
+                panX: this.state.panX,
+                offsetX: this.state.offsetX,
+                children: navigationState.routes.map(route => {
+                  const scene = this._renderScene({
+                    ...props,
+                    route,
+                  });
+
+                  if (React.isValidElement(scene)) {
+                    /* $FlowFixMe: https://github.com/facebook/flow/issues/4775 */
+                    return React.cloneElement(scene, { key: route.key });
+                  }
+
+                  return scene;
+                }),
+              })}
+            </View>
+            {tabBarPosition === 'bottom' && renderTabBar(props)}
+       </ScrollView>
+    ) : (
       <View collapsable={false} style={[styles.container, this.props.style]}>
         {tabBarPosition === 'top' && renderTabBar(props)}
         <View onLayout={this._handleLayout} style={styles.pager}>
