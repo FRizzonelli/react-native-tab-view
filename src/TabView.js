@@ -190,7 +190,8 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
         <ScrollView 
           stickyHeaderIndices={[1]} 
           collapsable={false} 
-          showsVerticalScrollIndicator={false} style={[styles.container, this.props.style]}
+          showsVerticalScrollIndicator={false} 
+          style={[styles.container, this.props.style]}
           onScrollEndDrag={(e) => {
             let paddingToBottom = 10;
             paddingToBottom += e.nativeEvent.layoutMeasurement.height;
@@ -224,7 +225,6 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
                 }),
               })}
             </View>
-            {tabBarPosition === 'bottom' && renderTabBar(props)}
        </ScrollView>
     ) : (
       <View collapsable={false} style={[styles.container, this.props.style]}>
@@ -259,9 +259,9 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    overflow: 'hidden',
+    // overflow: 'hidden',
   },
   pager: {
-    flex: 1,
+    flex: 1
   },
 });
