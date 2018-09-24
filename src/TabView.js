@@ -19,6 +19,8 @@ import type
 
 type Props<T> = PagerCommonProps<T> &
   PagerExtraProps & {
+    onScrollViewRef: (ref) => void,
+    onScroll: (e) => void,
     navigationState: NavigationState<T>,
     onIndexChange: (index: number) => mixed,
     initialLayout?: Layout,
@@ -181,6 +183,8 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
       onEndReached,
       renderTabBar,
       tabBarPosition,
+      onScrollViewRef,
+      onScroll,
       ...rest
     } = this.props;
 
@@ -188,11 +192,20 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
 
     return renderTopContent ? (
         <ScrollView 
+          ref={ref => {
+            if (onScrollViewRef) {
+              onScrollViewRef(ref)
+            }
+          }}
           stickyHeaderIndices={[1]} 
           collapsable={false} 
           showsVerticalScrollIndicator={false} 
           style={[styles.container, this.props.style]}
-          onScrollEndDrag={(e) => {
+          onScroll={(e) => {
+            if (onScroll) {
+              onScroll(e);
+            }
+
             let paddingToBottom = 10;
             paddingToBottom += e.nativeEvent.layoutMeasurement.height;
             if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
