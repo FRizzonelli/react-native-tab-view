@@ -24,8 +24,10 @@ type Props<T> = PagerCommonProps<T> &
     navigationState: NavigationState<T>,
     onIndexChange: (index: number) => mixed,
     initialLayout?: Layout,
+    isLoading?: boolean,
+    renderLoaderComponent?: (props: *) => React.Node,
     renderPager: (props: *) => React.Node,
-    renderTopContent: (props: *) => React.Node,
+    renderTopContent?: (props: *) => React.Node,
     renderScene: (props: SceneRendererProps<T> & Scene<T>) => React.Node,
     renderTabBar: (props: SceneRendererProps<T>) => React.Node,
     tabBarPosition: 'top' | 'bottom',
@@ -55,6 +57,8 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
     renderScene: PropTypes.func.isRequired,
     renderTabBar: PropTypes.func,
     renderTopContent: PropTypes.func,
+    isLoading: PropTypes.bool,
+    renderLoaderComponent: PropTypes.func,
     tabBarPosition: PropTypes.oneOf(['top', 'bottom']),
   };
 
@@ -180,6 +184,8 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
       /* eslint-enable no-unused-vars */
       renderPager,
       renderTopContent,
+      renderLoaderComponent,
+      isLoading,
       onEndReached,
       renderTabBar,
       tabBarPosition,
@@ -191,54 +197,62 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
     const props = this._buildSceneRendererProps();
 
     return renderTopContent ? (
-        <ScrollView 
-          ref={ref => {
-            if (onScrollViewRef) {
-              onScrollViewRef(ref)
-            }
-          }}
-          stickyHeaderIndices={[1]} 
-          collapsable={false} 
-          showsVerticalScrollIndicator={false} 
-          style={[styles.container, this.props.style]}
-          onScroll={(e) => {
-            if (onScroll) {
-              onScroll(e);
-            }
+      <ScrollView 
+        ref={ref => {
+          if (onScrollViewRef) {
+            onScrollViewRef(ref)
+          }
+        }}
+        stickyHeaderIndices={[1]} 
+        collapsable={false} 
+        showsVerticalScrollIndicator={false} 
+        style={[styles.container, this.props.style]}
+        contentContainerStyle={isLoading && renderLoaderComponent && { flex: 1 }}
+        onScroll={(e) => {
+          if (onScroll) {
+            onScroll(e);
+          }
 
-            let paddingToBottom = 10;
-            paddingToBottom += e.nativeEvent.layoutMeasurement.height;
-            if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
-              if (onEndReached) {
-                onEndReached();
-              }
+          let paddingToBottom = 10;
+          paddingToBottom += e.nativeEvent.layoutMeasurement.height;
+          if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
+            if (onEndReached) {
+              onEndReached();
             }
-          }}
-          scrollEventThrottle={400}>
-            {renderTopContent(props)}
-            {tabBarPosition === 'top' && renderTabBar(props)}
-            <View onLayout={this._handleLayout} style={styles.pager}>
-              {renderPager({
-                ...props,
-                ...rest,
-                panX: this.state.panX,
-                offsetX: this.state.offsetX,
-                children: navigationState.routes.map(route => {
-                  const scene = this._renderScene({
-                    ...props,
-                    route,
-                  });
+          }
+        }}
+        scrollEventThrottle={400}>
+          {renderTopContent(props)}
+          {!isLoading && renderLoaderComponent && tabBarPosition === 'top' && renderTabBar(props)}
+          {isLoading && renderLoaderComponent 
+            ? (
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                {renderLoaderComponent()}
+              </View>
+            ) : (
+              <View onLayout={this._handleLayout} style={styles.pager}>
+                {renderPager({
+                  ...props,
+                  ...rest,
+                  panX: this.state.panX,
+                  offsetX: this.state.offsetX,
+                  children: navigationState.routes.map(route => {
+                    const scene = this._renderScene({
+                      ...props,
+                      route,
+                    });
 
-                  if (React.isValidElement(scene)) {
-                    /* $FlowFixMe: https://github.com/facebook/flow/issues/4775 */
-                    return React.cloneElement(scene, { key: route.key });
-                  }
+                    if (React.isValidElement(scene)) {
+                      /* $FlowFixMe: https://github.com/facebook/flow/issues/4775 */
+                      return React.cloneElement(scene, { key: route.key });
+                    }
 
-                  return scene;
-                }),
-              })}
-            </View>
-       </ScrollView>
+                    return scene;
+                  }),
+                })}
+                </View>
+              )}
+        </ScrollView>
     ) : (
       <View collapsable={false} style={[styles.container, this.props.style]}>
         {tabBarPosition === 'top' && renderTabBar(props)}
