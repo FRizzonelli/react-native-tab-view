@@ -58,6 +58,7 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
     renderTabBar: PropTypes.func,
     renderTopContent: PropTypes.func,
     isLoading: PropTypes.bool,
+    scrollEnabled: PropTypes.bool,
     renderLoaderComponent: PropTypes.func,
     tabBarPosition: PropTypes.oneOf(['top', 'bottom']),
   };
@@ -191,6 +192,7 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
       tabBarPosition,
       onScrollViewRef,
       onScroll,
+      scrollEnabled,
       ...rest
     } = this.props;
 
@@ -203,6 +205,7 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
             onScrollViewRef(ref)
           }
         }}
+        scrollEnabled={scrollEnabled}
         stickyHeaderIndices={[1]} 
         collapsable={false} 
         showsVerticalScrollIndicator={false} 
