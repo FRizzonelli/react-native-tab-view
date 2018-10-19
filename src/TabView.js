@@ -26,6 +26,8 @@ type Props<T> = PagerCommonProps<T> &
     initialLayout?: Layout,
     isLoading?: boolean,
     renderLoaderComponent?: (props: *) => React.Node,
+    isError?: boolean,
+    renderErrorComponent?: (props: *) => React.Node,
     renderPager: (props: *) => React.Node,
     renderTopContent?: (props: *) => React.Node,
     renderScene: (props: SceneRendererProps<T> & Scene<T>) => React.Node,
@@ -58,8 +60,10 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
     renderTabBar: PropTypes.func,
     renderTopContent: PropTypes.func,
     isLoading: PropTypes.bool,
-    scrollEnabled: PropTypes.bool,
     renderLoaderComponent: PropTypes.func,
+    isError: PropTypes.bool,
+    renderErrorComponent: PropTypes.func,
+    scrollEnabled: PropTypes.bool,
     tabBarPosition: PropTypes.oneOf(['top', 'bottom']),
   };
 
@@ -186,7 +190,9 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
       renderPager,
       renderTopContent,
       renderLoaderComponent,
+      renderErrorComponent,
       isLoading,
+      isError,
       onEndReached,
       renderTabBar,
       tabBarPosition,
@@ -210,7 +216,7 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
         collapsable={false} 
         showsVerticalScrollIndicator={false} 
         style={[styles.container, this.props.style]}
-        contentContainerStyle={isLoading && renderLoaderComponent && { flex: 1 }}
+        contentContainerStyle={(isLoading && renderLoaderComponent) || (isError && renderErrorComponent) && { flex: 1 }}
         onScroll={(e) => {
           if (onScroll) {
             onScroll(e);
@@ -226,11 +232,15 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
         }}
         scrollEventThrottle={400}>
           {renderTopContent(props)}
-          {!isLoading && renderLoaderComponent && tabBarPosition === 'top' && renderTabBar(props)}
+          {!isLoading && renderLoaderComponent && !isError && renderErrorComponent && tabBarPosition === 'top' && renderTabBar(props)}
           {isLoading && renderLoaderComponent 
             ? (
               <View style={{ flex: 1, alignItems: 'center' }}>
                 {renderLoaderComponent()}
+              </View>
+            ) : isError && renderErrorComponent ? (
+              <View style={{ flex: 1 }}>
+                {renderErrorComponent()}
               </View>
             ) : (
               <View onLayout={this._handleLayout} style={styles.pager}>
