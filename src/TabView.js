@@ -213,9 +213,9 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
         }}
         scrollEnabled={scrollEnabled}
         stickyHeaderIndices={[1]} 
-        collapsable={false} 
+        collapsable={false}
         showsVerticalScrollIndicator={false} 
-        style={[styles.container, this.props.style]}
+        // style={[styles.container, this.props.style]}
         contentContainerStyle={(isLoading && renderLoaderComponent) || (isError && renderErrorComponent) && { flex: 1 }}
         onScroll={(e) => {
           if (onScroll) {

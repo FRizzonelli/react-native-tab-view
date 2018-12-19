@@ -1,15 +1,8 @@
 /* @flow */
 
-import * as React from 'react';
 import PropTypes from 'prop-types';
-import {
-  Animated,
-  I18nManager,
-  PanResponder,
-  StyleSheet,
-  View,
-  Platform,
-} from 'react-native';
+import * as React from 'react';
+import { Animated, I18nManager, PanResponder, Platform, StyleSheet, View } from 'react-native';
 import { PagerRendererPropType } from './PropTypes';
 import type { PagerRendererProps } from './TypeDefinitions';
 
@@ -231,7 +224,7 @@ export default class PagerPan<T: *> extends React.Component<Props<T>> {
   });
 
   render() {
-    const { panX, offsetX, navigationState, layout, children } = this.props;
+    const { panX, offsetX, navigationState, layout, children, tabHeight } = this.props;
     const { width } = layout;
     const { routes } = navigationState;
     const maxTranslate = width * (routes.length - 1);
@@ -265,9 +258,10 @@ export default class PagerPan<T: *> extends React.Component<Props<T>> {
             <View
               key={route.key}
               testID={this.props.getTestID({ route })}
-              style={
-                width ? { width } : focused ? StyleSheet.absoluteFill : null
-              }
+              style={[
+                width ? { width } : focused ? StyleSheet.absoluteFill : null,
+                tabHeight && {height: tabHeight}
+              ]}
             >
               {focused || width ? child : null}
             </View>

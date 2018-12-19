@@ -41,6 +41,7 @@ export type PagerRendererProps<T> = PagerCommonProps<T> & {
   jumpTo: (key: string) => mixed,
   useNativeDriver: boolean,
   children: Node,
+  tabHeight?: number
 };
 
 export type PagerCommonProps<T> = {

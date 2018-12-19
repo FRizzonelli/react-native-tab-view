@@ -1,7 +1,7 @@
 /* @flow */
 
 import * as React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { PagerRendererPropType } from './PropTypes';
 import type { PagerRendererProps } from './TypeDefinitions';
 
@@ -140,6 +140,7 @@ export default class PagerScroll<T: *> extends React.Component<
       navigationState,
       onSwipeStart,
       onSwipeEnd,
+      tabHeight,
     } = this.props;
 
     return (
@@ -178,12 +179,14 @@ export default class PagerScroll<T: *> extends React.Component<
               importantForAccessibility={
                 focused ? 'auto' : 'no-hide-descendants'
               }
-              style={
+              style={[
                 layout.width
                   ? { width: layout.width, overflow: 'hidden' }
                   : focused
                     ? styles.page
-                    : null
+                    : null,
+                    tabHeight && {height: tabHeight}
+                  ]
               }
             >
               {focused || layout.width ? child : null}
@@ -197,7 +200,7 @@ export default class PagerScroll<T: *> extends React.Component<
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   page: {
     flex: 1,
