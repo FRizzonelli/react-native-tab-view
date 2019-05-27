@@ -2,7 +2,7 @@
 
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import { Animated, ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import PagerDefault from './PagerDefault';
 import { NavigationStatePropType } from './PropTypes';
 import TabBar from './TabBar';
@@ -21,6 +21,8 @@ type Props<T> = PagerCommonProps<T> &
   PagerExtraProps & {
     onScrollViewRef: (ref) => void,
     onScroll: (e) => void,
+    onRefresh?: (e) => void,
+    refreshing?: boolean,
     navigationState: NavigationState<T>,
     onIndexChange: (index: number) => mixed,
     initialLayout?: Layout,
@@ -203,6 +205,8 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
       tabBarPosition,
       onScrollViewRef,
       onScroll,
+      onRefresh,
+      refreshing,
       scrollEnabled,
       ...rest
     } = this.props;
@@ -219,6 +223,9 @@ export default class TabView<T: *> extends React.Component<Props<T>, State> {
         scrollEnabled={scrollEnabled}
         stickyHeaderIndices={[1]} 
         collapsable={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={((isLoading && renderLoaderComponent) || (isError && renderErrorComponent)) && { flex: 1 }}
         onScroll={(e) => {
